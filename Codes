@@ -1,1 +1,573 @@
+# ======================================================
+# PowerCo Customer Churn Analysis - EDA
+# BCG Forage Virtual Experience
+# ======================================================
 
+# Import libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Settings
+plt.style.use("ggplot")
+pd.set_option("display.max_columns", None)
+
+# ======================================================
+# Load datasets
+# ======================================================
+
+client_df = pd.read_csv("client_data.csv")
+price_df = pd.read_csv("price_data.csv")
+
+print("="*50)
+print("DATASET SHAPES")
+print("="*50)
+
+print("Client Data:", client_df.shape)
+print("Price Data :", price_df.shape)
+
+# ======================================================
+# First look
+# ======================================================
+
+print("\n")
+print("="*50)
+print("CLIENT DATA HEAD")
+print("="*50)
+
+print(client_df.head())
+
+print("\n")
+print("="*50)
+print("PRICE DATA HEAD")
+print("="*50)
+
+print(price_df.head())
+
+# ======================================================
+# Data types
+# ======================================================
+
+print("\n")
+print("="*50)
+print("CLIENT DATA TYPES")
+print("="*50)
+
+print(client_df.dtypes)
+
+print("\n")
+print("="*50)
+print("PRICE DATA TYPES")
+print("="*50)
+
+print(price_df.dtypes)
+
+# ======================================================
+# Missing values
+# ======================================================
+
+print("\n")
+print("="*50)
+print("MISSING VALUES - CLIENT DATA")
+print("="*50)
+
+print(client_df.isnull().sum())
+
+print("\n")
+print("="*50)
+print("MISSING VALUES - PRICE DATA")
+print("="*50)
+
+print(price_df.isnull().sum())
+
+# ======================================================
+# Descriptive Statistics
+# ======================================================
+
+print("\n")
+print("="*50)
+print("CLIENT DATA STATISTICS")
+print("="*50)
+
+print(client_df.describe())
+
+print("\n")
+print("="*50)
+print("PRICE DATA STATISTICS")
+print("="*50)
+
+print(price_df.describe())
+
+# ======================================================
+# Unique values
+# ======================================================
+
+print("\n")
+print("="*50)
+print("UNIQUE VALUES")
+print("="*50)
+
+for col in client_df.columns:
+    print(f"{col}: {client_df[col].nunique()}")
+
+# ======================================================
+# Convert dates
+# ======================================================
+
+date_cols = [
+    "date_activ",
+    "date_end",
+    "date_modif_prod",
+    "date_renewal"
+]
+
+for col in date_cols:
+    if col in client_df.columns:
+        client_df[col] = pd.to_datetime(client_df[col])
+
+# ======================================================
+# Churn Distribution
+# ======================================================
+
+plt.figure(figsize=(6,4))
+
+sns.countplot(
+    x="churn",
+    data=client_df
+)
+
+plt.title("Churn Distribution")
+plt.show()
+
+# ======================================================
+# Annual Consumption Distribution
+# ======================================================
+
+plt.figure(figsize=(8,5))
+
+sns.histplot(
+    client_df["cons_12m"],
+    bins=50,
+    kde=True
+)
+
+plt.title("Annual Consumption Distribution")
+plt.show()
+
+# ======================================================
+# Net Margin Distribution
+# ======================================================
+
+plt.figure(figsize=(8,5))
+
+sns.histplot(
+    client_df["net_margin"],
+    bins=50,
+    kde=True
+)
+
+plt.title("Net Margin Distribution")
+plt.show()
+
+# ======================================================
+# Customer Tenure
+# ======================================================
+
+plt.figure(figsize=(8,5))
+
+sns.histplot(
+    client_df["num_years_antig"],
+    bins=20,
+    kde=True
+)
+
+plt.title("Customer Tenure")
+plt.show()
+
+# ======================================================
+# Top Sales Channels
+# ======================================================
+
+plt.figure(figsize=(10,5))
+
+client_df["channel_sales"]\
+.value_counts()\
+.head(10)\
+.plot(kind="bar")
+
+plt.title("Top Sales Channels")
+plt.show()
+
+# ======================================================
+# Has Gas
+# ======================================================
+
+plt.figure(figsize=(6,4))
+
+sns.countplot(
+    x="has_gas",
+    data=client_df
+)
+
+plt.title("Gas Subscription")
+plt.show()
+
+# ======================================================
+# Gas vs Churn
+# ======================================================
+
+print("\n")
+print("="*50)
+print("HAS GAS VS CHURN")
+print("="*50)
+
+print(
+    pd.crosstab(
+        client_df["has_gas"],
+        client_df["churn"]
+    )
+)
+
+# ======================================================
+# Price Distributions
+# ======================================================
+
+price_columns = [
+    "price_off_peak_var",
+    "price_peak_var",
+    "price_mid_peak_var"
+]
+
+for col in price_columns:
+
+    if col in price_df.columns:
+
+        plt.figure(figsize=(8,5))
+
+        sns.histplot(
+            price_df[col],
+            bins=50,
+            kde=True
+        )
+
+        plt.title(col)
+
+        plt.show()
+
+# ======================================================
+# Correlation Heatmap
+# ======================================================
+
+plt.figure(figsize=(14,10))
+
+corr_matrix = client_df.select_dtypes(
+    include=np.number
+).corr()
+
+sns.heatmap(
+    corr_matrix,
+    cmap="coolwarm",
+    center=0
+)
+
+plt.title("Correlation Matrix")
+plt.show()
+
+# ======================================================
+# Findings
+# ======================================================
+
+print("\n")
+print("="*50)
+print("KEY FINDINGS")
+print("="*50)
+
+print("""
+1. Churned customers are a minority of the dataset.
+2. Consumption variables are highly right-skewed.
+3. Some variables contain significant outliers.
+4. Customer tenure varies considerably.
+5. Pricing variables show variation that may influence churn.
+6. Further feature engineering is required.
+7. Price sensitivity should be investigated further.
+""")
+
+
+
+# ==========================================
+# Load Data
+# ==========================================
+
+df = pd.read_csv("clean_data_after_eda.csv")
+
+print("Original Shape:", df.shape)
+
+# ==========================================
+# Convert Date Columns
+# ==========================================
+
+date_cols = [
+    "date_activ",
+    "date_end",
+    "date_modif_prod",
+    "date_renewal"
+]
+
+for col in date_cols:
+    df[col] = pd.to_datetime(df[col])
+
+# ==========================================
+# Feature 1
+# Average yearly price change
+# ==========================================
+
+df["avg_yearly_price_change"] = (
+    df["var_year_price_off_peak"] +
+    df["var_year_price_peak"] +
+    df["var_year_price_mid_peak"]
+) / 3
+
+# ==========================================
+# Feature 2
+# Average 6-month price change
+# ==========================================
+
+df["avg_6m_price_change"] = (
+    df["var_6m_price_off_peak"] +
+    df["var_6m_price_peak"] +
+    df["var_6m_price_mid_peak"]
+) / 3
+
+# ==========================================
+# Feature 3
+# Price sensitivity
+# ==========================================
+
+df["price_sensitivity"] = (
+    df["avg_yearly_price_change"] /
+    (df["forecast_cons_12m"] + 1)
+)
+
+# ==========================================
+# Feature 4
+# Customer tenure (days)
+# ==========================================
+
+df["customer_tenure_days"] = (
+    df["date_end"] - df["date_activ"]
+).dt.days
+
+# ==========================================
+# Feature 5
+# Days since product modification
+# ==========================================
+
+df["days_since_modification"] = (
+    df["date_end"] - df["date_modif_prod"]
+).dt.days
+
+# ==========================================
+# Feature 6
+# Days until renewal
+# ==========================================
+
+df["days_until_renewal"] = (
+    df["date_renewal"] - df["date_activ"]
+).dt.days
+
+# ==========================================
+# Feature 7
+# Consumption ratio
+# ==========================================
+
+df["consumption_ratio"] = (
+    df["cons_last_month"] /
+    (df["cons_12m"] + 1)
+)
+
+# ==========================================
+# Feature 8
+# Profitability ratio
+# ==========================================
+
+df["profitability_ratio"] = (
+    df["net_margin"] /
+    (df["forecast_cons_12m"] + 1)
+)
+
+# ==========================================
+# Check New Features
+# ==========================================
+
+new_features = [
+    "avg_yearly_price_change",
+    "avg_6m_price_change",
+    "price_sensitivity",
+    "customer_tenure_days",
+    "days_since_modification",
+    "days_until_renewal",
+    "consumption_ratio",
+    "profitability_ratio"
+]
+
+print(df[new_features].head())
+
+# ==========================================
+# Save Engineered Dataset
+# ==========================================
+
+df.to_csv(
+    "clean_data_feature_engineered.csv",
+    index=False
+)
+
+print("Feature Engineering Completed.")
+print("New Shape:", df.shape)
+
+# ======================================================
+# PowerCo Churn Prediction
+# BCG Forage Virtual Experience
+# ======================================================
+
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    classification_report,
+    roc_auc_score
+)
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# ======================================================
+# Load Data
+# ======================================================
+
+df = pd.read_csv("data_for_predictions.csv")
+
+print("Dataset Shape:", df.shape)
+
+# ======================================================
+# Features and Target
+# ======================================================
+
+X = df.drop("churn", axis=1)
+y = df["churn"]
+
+# ======================================================
+# Train Test Split
+# ======================================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.25,
+    random_state=42,
+    stratify=y
+)
+
+# ======================================================
+# Random Forest Model
+# ======================================================
+
+rf_model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+
+rf_model.fit(X_train, y_train)
+
+# ======================================================
+# Predictions
+# ======================================================
+
+y_pred = rf_model.predict(X_test)
+y_prob = rf_model.predict_proba(X_test)[:, 1]
+
+# ======================================================
+# Evaluation Metrics
+# ======================================================
+
+print("\n")
+print("="*50)
+print("MODEL PERFORMANCE")
+print("="*50)
+
+print("Accuracy :", accuracy_score(y_test, y_pred))
+print("Precision:", precision_score(y_test, y_pred))
+print("Recall   :", recall_score(y_test, y_pred))
+print("F1 Score :", f1_score(y_test, y_pred))
+print("ROC AUC  :", roc_auc_score(y_test, y_prob))
+
+print("\n")
+print("="*50)
+print("CLASSIFICATION REPORT")
+print("="*50)
+
+print(classification_report(y_test, y_pred))
+
+# ======================================================
+# Confusion Matrix
+# ======================================================
+
+cm = confusion_matrix(y_test, y_pred)
+
+plt.figure(figsize=(6,4))
+
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues"
+)
+
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+
+plt.show()
+
+# ======================================================
+# Feature Importance
+# ======================================================
+
+importance_df = pd.DataFrame({
+    "Feature": X.columns,
+    "Importance": rf_model.feature_importances_
+})
+
+importance_df = importance_df.sort_values(
+    by="Importance",
+    ascending=False
+)
+
+print("\n")
+print("="*50)
+print("TOP 10 IMPORTANT FEATURES")
+print("="*50)
+
+print(importance_df.head(10))
+
+# ======================================================
+# Feature Importance Plot
+# ======================================================
+
+plt.figure(figsize=(10,6))
+
+sns.barplot(
+    data=importance_df.head(10),
+    x="Importance",
+    y="Feature"
+)
+
+plt.title("Top 10 Important Features")
+
+plt.show()
