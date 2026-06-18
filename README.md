@@ -93,6 +93,12 @@ Evaluation Metrics:
 - Seaborn
 - Scikit-Learn
 - Jupyter Notebook
+  
+ ## Dataset
+
+The datasets used in this project were provided as part of the BCG Data Science Virtual Experience Program (Forage).
+
+Due to dataset ownership and repository size considerations, the raw data files are not included in this repository.
 
 ---
 
